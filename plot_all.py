@@ -58,8 +58,9 @@ plot_latent(style_train,y_train,"style-train.png")
 digit_test = encoder_digit.predict(x_test)
 labels_test = np.argmax(digit_test,1)
 
-added = np.concatenate((style_test[:,0] + labels_test, style_test[:,1]), axis=1)
+added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*100, style_test[:,1]]))
 
+plot_latent(added,y_test,"style-label.png")
 
 
 
