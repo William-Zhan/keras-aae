@@ -12,6 +12,7 @@ from util import name, latent_dim
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
+pre_encoder = keras.models.load_model(name+'/pre.h5')
 encoder = keras.models.load_model(name+'/encoder.h5')
 encoder_style = keras.models.load_model(name+'/encoder0.h5')
 encoder_digit = keras.models.load_model(name+'/encoder1.h5')
