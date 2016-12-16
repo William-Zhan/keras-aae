@@ -11,7 +11,6 @@ from util import train, train_stack, retrieve_stack, name, latent_dim
 import numpy as np
 import os
 import tensorflow as tf
-print tf.get_variable_scope()
 
 conv_common = {'activation':'relu', 'border_mode':'same'}
 
@@ -48,7 +47,7 @@ decoder = Sequential(
     ])
 
 x = Input((784,))
-tf.get_variable_scope().reuse_variables()
+
 z1 = pre_encoder(x)
 
 latent_nodes = np.array(map(lambda l: l(z1), latent_layers))
@@ -63,7 +62,6 @@ def concatenate(zs):
 
 z  = Lambda(concatenate)(zs)
 
-tf.get_variable_scope().reuse_variables()
 y = decoder(z)
 
 encoder     = Model(x,z)
@@ -102,7 +100,7 @@ def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False)
                              ReduceLROnPlateau(
                                  monitor='loss',
                                  factor=0.9,
-                                 patience=3,verbose=1,mode='min',epsilon=0.0001)
+                                 patience=10,verbose=1,mode='min',epsilon=0.0001)
                   ])
     except KeyboardInterrupt:
         print ("learning stopped")
