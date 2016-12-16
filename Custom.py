@@ -216,6 +216,8 @@ class Latent(object):
         import tensorflow as tf
         z = self.encoder(pre_z)
         n = self.sampler(z)
-        d1 = self.discriminator(z)
-        d2 = self.discriminator(n)
+        with tf.variable_scope("discriminator") as scope:
+            d1 = self.discriminator(z)
+            tf.get_variable_scope().reuse_variables()
+            d2 = self.discriminator(n)
         return z, d1, d2
