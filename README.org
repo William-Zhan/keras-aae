@@ -6,3 +6,17 @@ Requirements: Tensorflow<=0.11 due to [[https://github.com/fchollet/keras/issues
 
 To learn, run =learn.py=.
 To plot, run =plot_all.py=.
+
+
+Related work:
+
++ https://github.com/musyoku/adversarial-autoencoder
++ https://github.com/takerum/adversarial_autoencoder
++ https://github.com/fukuta0614/chainer-adversarial-autoencoder
+
+Publication:
+
+Adversarial Autoencoders
+Alireza Makhzani, Jonathon Shlens, Navdeep Jaitly, Ian Goodfellow, Brendan Frey
+
+https://arxiv.org/abs/1511.05644
