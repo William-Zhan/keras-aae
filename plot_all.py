@@ -43,8 +43,8 @@ x = np.einsum('igjp->gijp', x)  # 4,2,6,784
 x = x.reshape((48,784))
 plot_grid(x,"autoencoding.png")
 
-def plot_latent(latent,color,name):
-    plt.figure(figsize=(6, 6))
+def plot_latent(latent,color,name,size=(6,6)):
+    plt.figure(figsize=size)
     plt.scatter(latent[:, 0], latent[:, 1], c=color)
     plt.colorbar()
     plt.savefig(name)
@@ -56,11 +56,16 @@ style_train = encoder_style.predict(x_train)
 plot_latent(style_train,y_train,"style-train.png")
 
 digit_test = encoder_digit.predict(x_test)
+
+print digit_test[:3]
+
 labels_test = np.argmax(digit_test,1)
+
+
 
 added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*100, style_test[:,1]]))
 
-plot_latent(added,y_test,"style-label.png")
+plot_latent(added,y_test,"style-label.png",(36,6))
 
 
 
