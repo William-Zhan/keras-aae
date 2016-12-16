@@ -67,9 +67,9 @@ print result_test[:10]
 
 labels_test = np.argmax(digit_test,1)
 
-added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*100, style_test[:,1]]))
+added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*10, style_test[:,1]]))
 
-plot_latent(added,y_test,"style-label.png",(36,6))
+plot_latent(added,y_test,"style-label.png",(60,6))
 
 
 
