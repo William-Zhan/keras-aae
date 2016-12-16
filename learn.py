@@ -29,10 +29,10 @@ def gaussian_distribution (z):
 style = Latent(2,gaussian_distribution,'linear')
 
 def categorical_distribution (z):
-    uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=10, dtype='int32')
-    return K.one_hot(uni, 10)
+    uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=6, dtype='int32')
+    return K.one_hot(uni, 6)
 
-digit = Latent(10, categorical_distribution, 'sigmoid')
+digit = Latent(6, categorical_distribution, 'sigmoid')
 
 latent_layers = [style,digit]
 
