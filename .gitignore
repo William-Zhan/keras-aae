@@ -1,2 +1,10 @@
 *~
 #*
+*.log
+*.pyc
+*.csv
+*.png
+*.pddl
+*.plan
+*.negative
+/learn/*.guicho-desktop
