@@ -2,7 +2,7 @@
 
 * Clean implementation of Adversarial Autoencoder in Keras
 
-Due to the bug, I do not apply batch normalization in this network.
+Requirements: Tensorflow<=0.11 due to [[https://github.com/fchollet/keras/issues/4638][the regression in Keras]].
 
 To learn, run =learn.py=.
 To plot, run =plot_all.py=.
