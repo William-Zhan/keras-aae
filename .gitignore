@@ -8,3 +8,4 @@
 *.plan
 *.negative
 /learn/*.guicho-desktop
+/learn/
