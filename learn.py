@@ -71,13 +71,13 @@ autoencoder = Model(x,y)
 aae = Model(input=x,output=(y,)+d1s+d2s)
 
 from keras.objectives import binary_crossentropy
-weight = 100
-def bc(x,y):
-    return weight * binary_crossentropy(x,y)
+def bc(weight):
+    return lambda x,y: weight * binary_crossentropy(x,y)
 
-from keras.optimizers import Adam
-aae.compile(optimizer=Adam(lr=0.001),
-            loss=list(('mse',) + tuple([bc]*(2*dimensions))))
+from keras.optimizers import Adam, RMSprop
+aae.compile(optimizer=RMSprop(lr=0.0001),
+            loss=list(('mse',) +
+                      tuple([bc( 1)]*(2*dimensions))))
 aae.summary()
 
 def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False):
