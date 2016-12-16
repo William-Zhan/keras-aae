@@ -7,7 +7,7 @@ from keras.constraints import maxnorm
 from keras import regularizers
 from keras.layers.normalization import BatchNormalization as BN
 from keras import backend as K
-from util import train, train_stack, retrieve_stack, name, latent_dim
+from util import train, train_stack, retrieve_stack, name
 import numpy as np
 import os
 import tensorflow as tf
@@ -24,15 +24,15 @@ pre_encoder = Sequential(
     ])
 
 def gaussian_distribution (z):
-    return K.random_normal(shape=K.shape(z), mean=0., std=1.)
+    return K.random_normal(shape=K.shape(z), mean=0., std=0.1)
 
-style = Latent(2,gaussian_distribution)
+style = Latent(2,gaussian_distribution,'linear')
 
 def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=10, dtype='int32')
     return K.one_hot(uni, 10)
 
-digit = Latent(10, categorical_distribution)
+digit = Latent(10, categorical_distribution, 'sigmoid')
 
 latent_layers = [style,digit]
 
@@ -41,13 +41,12 @@ dimensions = len(latent_layers)
 decoder = Sequential(
     (reduce(lambda x, y: x+y, map(lambda x: x.dim, latent_layers)),),
     [
-        Dense(1000,activation='relu'),
+        Dense(1000, activation='relu'),
         Dense(1000, activation='relu'),
         Dense(784,  activation='sigmoid'),
     ])
 
 x = Input((784,))
-
 z1 = pre_encoder(x)
 
 latent_nodes = np.array(map(lambda l: l(z1), latent_layers))
@@ -69,9 +68,14 @@ encoders    = map(lambda (z): Model(x,z), zs)
 autoencoder = Model(x,y)
 aae = Model(input=x,output=(y,)+d1s+d2s)
 
+from keras.objectives import binary_crossentropy
+weight = 100
+def bc(x,y):
+    return weight * binary_crossentropy(x,y)
+
 from keras.optimizers import Adam
 aae.compile(optimizer=Adam(lr=0.001),
-            loss=list(('mse',) + tuple(['binary_crossentropy']*(2*dimensions))))
+            loss=list(('mse',) + tuple([bc]*(2*dimensions))))
 aae.summary()
 
 def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False):
@@ -99,14 +103,16 @@ def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False)
                                  patience=20,verbose=1,mode='min',min_delta=0.0001),
                              ReduceLROnPlateau(
                                  monitor='loss',
-                                 factor=0.9,
-                                 patience=10,verbose=1,mode='min',epsilon=0.0001)
+                                 factor=0.7,
+                                 patience=3,verbose=1,mode='min',epsilon=0.0001)
                   ])
     except KeyboardInterrupt:
         print ("learning stopped")
     plot_examples(name,autoencoder,x_test)
 
 aae_train(aae, name, 1024, 8)
+aae.compile(optimizer=Adam(lr=0.01),
+            loss=list(('mse',) + tuple(['binary_crossentropy']*(2*dimensions))))
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")

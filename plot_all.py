@@ -52,14 +52,14 @@ def plot_latent(latent,color,name):
 style_test = encoder_style.predict(x_test)
 plot_latent(style_test,y_test,"style.png")
 
+style_train = encoder_style.predict(x_train)
+plot_latent(style_train,y_train,"style-train.png")
+
 digit_test = encoder_digit.predict(x_test)
 labels_test = np.argmax(digit_test,1)
-hist = np.histogram(labels_test)
 
+added = np.concatenate((style_test[:,0] + labels_test, style_test[:,1]), axis=1)
 
-# map the training data too
-z_train = encoder_style.predict(x_train)
-plot_latent(z_train,y_train,"style-train.png")
 
 
 
