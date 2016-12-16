@@ -200,10 +200,10 @@ class Deconvolution2D(Convolution2D):
         return dict(list(base_config.items()) + list(config.items()))
 
 class Latent(object):
-    def __init__(self, latent_dim, sample_fn):
+    def __init__(self, latent_dim, sample_fn, activation='linear'):
         self.dim = latent_dim
         self.sampler = Lambda(sample_fn)
-        self.encoder = Dense(latent_dim, activation='linear')
+        self.encoder = Dense(latent_dim, activation=activation)
         self.discriminator = Sequential(
             (latent_dim,),
             [
