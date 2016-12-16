@@ -19,7 +19,9 @@ pre_encoder = Sequential(
     (784,),
     [
         Dense(1000, activation='relu'),
+        BN(),
         Dense(1000, activation='relu'),
+        BN(),
     ])
 
 def gaussian_distribution (z):
@@ -108,6 +110,7 @@ def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False)
 
 aae_train(aae, name, 1024, 8)
 
+pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
 encoder.save(name+"/encoder.h5")
 decoder.save(name+"/decoder.h5")

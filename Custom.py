@@ -203,7 +203,7 @@ class Latent(object):
     def __init__(self, latent_dim, sample_fn):
         self.dim = latent_dim
         self.sampler = Lambda(sample_fn)
-        self.encoder = Dense(latent_dim, activation='sigmoid')
+        self.encoder = Dense(latent_dim, activation='linear')
         self.discriminator = Sequential(
             (latent_dim,),
             [
