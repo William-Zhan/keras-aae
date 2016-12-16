@@ -1,0 +1,8 @@
+
+
+* Clean implementation of Adversarial Autoencoder in Keras
+
+Due to the bug, I do not apply batch normalization in this network.
+
+To learn, run =learn.py=.
+To plot, run =plot_all.py=.
