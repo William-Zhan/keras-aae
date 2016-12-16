@@ -16,6 +16,8 @@ pre_encoder = keras.models.load_model(name+'/pre.h5')
 encoder = keras.models.load_model(name+'/encoder.h5')
 encoder_style = keras.models.load_model(name+'/encoder0.h5')
 encoder_digit = keras.models.load_model(name+'/encoder1.h5')
+discriminator_style = keras.models.load_model(name+'/discriminator0.h5')
+discriminator_digit = keras.models.load_model(name+'/discriminator1.h5')
 decoder = keras.models.load_model(name+'/decoder.h5')
 autoencoder = keras.models.load_model(name+'/model.h5')
 
@@ -57,11 +59,13 @@ plot_latent(style_train,y_train,"style-train.png")
 
 digit_test = encoder_digit.predict(x_test)
 
-print digit_test[:3]
+print digit_test[:10]
+
+result_test = discriminator_digit.predict(digit_test)
+
+print result_test[:10]
 
 labels_test = np.argmax(digit_test,1)
-
-
 
 added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*100, style_test[:,1]]))
 

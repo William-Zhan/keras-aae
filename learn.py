@@ -65,6 +65,7 @@ y = decoder(z)
 
 encoder     = Model(x,z)
 encoders    = map(lambda (z): Model(x,z), zs)
+discriminators = map(lambda l: l.discriminator, latent_layers)
 autoencoder = Model(x,y)
 aae = Model(input=x,output=(y,)+d1s+d2s)
 
@@ -120,3 +121,5 @@ encoder.save(name+"/encoder.h5")
 decoder.save(name+"/decoder.h5")
 for i, e in enumerate(encoders):
     e.save(name+"/encoder"+str(i)+".h5")
+for i, e in enumerate(discriminators):
+    e.save(name+"/discriminator"+str(i)+".h5")
