@@ -17,9 +17,9 @@ conv_common = {'activation':'relu', 'border_mode':'same'}
 pre_encoder = Sequential(
     (784,),
     [
-        Dense(1000, activation='relu'),
+        Dense(3000, activation='relu'),
         BN(),
-        Dense(1000, activation='relu'),
+        Dense(3000, activation='relu'),
         BN(),
     ])
 
@@ -41,8 +41,9 @@ dimensions = len(latent_layers)
 decoder = Sequential(
     (reduce(lambda x, y: x+y, map(lambda x: x.dim, latent_layers)),),
     [
-        Dense(1000, activation='relu'),
-        Dense(1000, activation='relu'),
+        Dense(3000, activation='relu'),
+        BN(),
+        Dense(3000, activation='relu'),
         Dense(784,  activation='sigmoid'),
     ])
 

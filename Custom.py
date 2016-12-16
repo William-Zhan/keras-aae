@@ -201,6 +201,7 @@ class Deconvolution2D(Convolution2D):
 
 class Latent(object):
     def __init__(self, latent_dim, sample_fn, activation='linear'):
+        from keras.layers.normalization import BatchNormalization as BN
         self.dim = latent_dim
         self.sampler = Lambda(sample_fn)
         self.encoder = Dense(latent_dim, activation=activation)
@@ -208,8 +209,9 @@ class Latent(object):
             (latent_dim,),
             [
                 # putting BN in the discriminator worsens the result
-                Dense(1000, activation='relu'),
-                Dense(1000, activation='relu'),
+                Dense(3000, activation='relu'),
+                BN(),
+                Dense(3000, activation='relu'),
                 Dense(1,    activation='sigmoid'),
             ])
     def __call__ (self,pre_z):
