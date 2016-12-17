@@ -68,16 +68,16 @@ encoder     = Model(x,z)
 encoders    = map(lambda (z): Model(x,z), zs)
 discriminators = map(lambda l: l.discriminator, latent_layers)
 autoencoder = Model(x,y)
-aae = Model(input=x,output=(y,)+d1s+d2s)
+aae = Model(input=x,output=(y,)+d1s+d2s+d1s+d2s)
 
 from keras.objectives import binary_crossentropy
 def bc(weight):
     return lambda x,y: weight * binary_crossentropy(x,y)
 
 from keras.optimizers import Adam, RMSprop
-aae.compile(optimizer=RMSprop(lr=0.0001),
+aae.compile(optimizer=Adam(lr=0.001),
             loss=list(('mse',) +
-                      tuple([bc( 1)]*(2*dimensions))))
+                      tuple([bc(1)]*(4*dimensions))))
 aae.summary()
 
 def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False):
@@ -94,7 +94,9 @@ def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False)
         model.fit(x_input,
                   list((x_train,) +
                        tuple(map(lambda x: np.ones([x_input.shape[0],1]),  range(dimensions))) +
-                       tuple(map(lambda x: np.zeros([x_input.shape[0],1]), range(dimensions)))),
+                       tuple(map(lambda x: np.zeros([x_input.shape[0],1]), range(dimensions))) +
+                       tuple(map(lambda x: np.zeros([x_input.shape[0],1]),  range(dimensions))) +
+                       tuple(map(lambda x: np.ones([x_input.shape[0],1]), range(dimensions)))),
                   nb_epoch=epoch,
                   batch_size=(batch_size//1),
                   shuffle=True,
@@ -113,8 +115,6 @@ def aae_train (model, name, epoch=128,computational_effort_factor=8,noise=False)
     plot_examples(name,autoencoder,x_test)
 
 aae_train(aae, name, 1024, 8)
-aae.compile(optimizer=Adam(lr=0.01),
-            loss=list(('mse',) + tuple(['binary_crossentropy']*(2*dimensions))))
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
