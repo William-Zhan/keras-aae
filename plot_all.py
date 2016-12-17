@@ -71,8 +71,6 @@ added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*10, style_tes
 
 plot_latent(added,y_test,"style-label.png",(60,6))
 
-
-
 # if latent_dim == 2:
 #     from scipy.stats import norm
 #     # display a 2D manifold of the digits
