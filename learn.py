@@ -18,6 +18,11 @@ conv_common = {'activation':'relu', 'border_mode':'same'}
 pre_encoder = Sequential(
     (784,),
     [
+        # Reshape((28,28,1)),
+        # Convolution2D(64,3,3,activation='relu'),
+        # BN(),
+        # MaxPooling2D((2,2)),
+        # Flatten(),
         Dense(1000, activation='relu'),
         BN(),
         Dense(1000, activation='relu'),
@@ -35,8 +40,8 @@ def categorical_distribution (z):
 
 digit = Latent(6, categorical_distribution, 'sigmoid')
 
-# latent_layers = [style,digit]
-latent_layers = [style]
+latent_layers = [style,digit]
+# latent_layers = [style]
 
 dimensions = len(latent_layers)
 
@@ -102,6 +107,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     batch_size = epoch * computational_effort_factor
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,_, x_test,_ = mnist()
+    x_train = x_train[:36000,:]   # for removing residuals
     total = x_train.shape[0]
     if noise:
         x_input = add_noise(x_train)
@@ -112,12 +118,14 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     r_loss, d_loss, g_loss = 0.,0.,0.
     try:
         for e in range(epoch):
+            d = {'discriminator' : 0, 'generator' : 0}
             for i in range(total//batch_size):
-                d = {'teach' : 0, 'deceive' : 0}
                 batch_pb = Progbar(total, width=25)
-                def update():
+                def update(force=False):
                     batch_pb.update(min((i+1)*batch_size,total),
-                                    [('r',r_loss), ('d',d_loss), ('g',g_loss)])
+                                    [('r',r_loss), ('d',d_loss), ('g',g_loss),
+                                     # ('d-g',(d_loss-g_loss))
+                                    ], force=force)
                 x_batch = x_train[i*batch_size:(i+1)*batch_size]
                 real_batch = real_train[i*batch_size:(i+1)*batch_size]
                 fake_batch = fake_train[i*batch_size:(i+1)*batch_size]
@@ -125,33 +133,38 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
                 set_trainable(decoder, True)
                 map(lambda d:set_trainable(d,False), discriminators)
                 r_loss = aae_r.train_on_batch(x_batch, x_batch)
-                def teach():
-                    d['teach'] += 1
+                def test():
+                    return \
+                        aae_d.test_on_batch( \
+                            x_batch, np.concatenate((real_batch,fake_batch),1)), \
+                        aae_g.test_on_batch( \
+                            x_batch, np.concatenate((real_batch,real_batch),1))
+                def train_discriminator():
+                    d['discriminator'] += 1
                     set_trainable(encoder, False)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,True), discriminators)
-                    d_loss = aae_d.train_on_batch(
-                        x_batch, np.concatenate((real_batch,fake_batch),1))
-                def deceive():
-                    d['deceive'] += 1
+                    return aae_d.train_on_batch(
+                        x_batch, np.concatenate((fake_batch,real_batch),1))
+                def train_generator():
+                    d['generator'] += 1
                     set_trainable(encoder, True)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
-                    g_loss = aae_g.train_on_batch(
+                    return aae_g.train_on_batch(
                         x_batch, np.concatenate((real_batch,real_batch),1))
-                teach()
-                deceive()
+                for j in range(1):
+                    train_discriminator()
+                    train_generator()
+                d_loss, g_loss = test()
                 update()
-                while abs(d_loss - g_loss) > 0.01 :
-                    teach()
-                    deceive()
-                    update()
             print "\nEpoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
-                                                      ('nt',d['teach']), ('nd',d['deceive'])])
+                                                      ('td',d['discriminator']),
+                                                      ('tg',d['generator'])])
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 1000, 4)
+aae_train(name, 1000, 6)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
@@ -164,3 +177,33 @@ for i, e in enumerate(discriminators):
 
 # from util import plot_examples
 # plot_examples(name,autoencoder,x_test)
+
+
+# how to train the adversarial network?
+# train_discriminator()
+# train_generator()
+# d_loss, g_loss = test()
+# update(('d',d_loss))
+# idea 1
+# for j in range(10):
+#     train_discriminator()
+#     train_generator()
+#     d_loss, g_loss = test()
+#     update()
+# idea 2
+# while abs(d_loss-g_loss) > 0.01:
+#     if d_loss > g_loss:
+#         train_discriminator()
+#     else:
+#         train_generator()
+#     d_loss, g_loss = test()
+#     update()
+# idea 3
+# while True:
+#     d_loss, g_loss = test()
+#     if g_loss > 1.0:
+#         break
+#     train_discriminator()
+# while True:
+#     if train_generator() < 0.1:
+#         break
