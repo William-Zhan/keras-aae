@@ -25,7 +25,7 @@ pre_encoder = Sequential(
     ])
 
 def gaussian_distribution (z):
-    return K.random_normal(shape=K.shape(z), mean=0., std=0.1)
+    return K.random_normal(shape=K.shape(z), mean=0., std=1.)
 
 style = Latent(2,gaussian_distribution,'linear')
 
@@ -56,6 +56,7 @@ latent_nodes = np.array(map(lambda l: l(z1), latent_layers))
 
 zs = list(latent_nodes[:,0])
 ds = list(latent_nodes[:,1:].transpose().flatten())
+# ^^^ [[real,fake],[real,fake],...] -> [real,real...,fake,fake...]
 print zs
 print ds
 def concatenate(tensors):
@@ -84,9 +85,15 @@ def bc(weight):
 aae_r = Model(input=x,output=y)
 aae_r.compile(optimizer=Adam(lr=0.001), loss='mse')
 aae_d = Model(input=x,output=d)
-aae_d.compile(optimizer=Adam(lr=0.001), loss=bc(1))
+aae_d.compile(optimizer=Adam(lr=0.0001), loss='binary_crossentropy')
 aae_g = Model(input=x,output=d)
-aae_g.compile(optimizer=Adam(lr=0.001), loss=bc(-1))
+aae_g.compile(optimizer=Adam(lr=0.0001), loss='binary_crossentropy')
+
+def set_trainable(net, val):
+    net.trainable = val
+    if hasattr(net, 'layers'):
+        for l in net.layers:
+            set_trainable(l, val)
 
 def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
@@ -95,48 +102,56 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     batch_size = epoch * computational_effort_factor
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,_, x_test,_ = mnist()
-    batch_pb = Progbar(x_train.shape[0], width=25)
-    epoch_pb = Progbar(epoch,            width=25)
+    total = x_train.shape[0]
     if noise:
         x_input = add_noise(x_train)
     else:
         x_input = x_train
-    d_train = np.concatenate((np.ones([x_input.shape[0],dimensions]),
-                              np.zeros([x_input.shape[0],dimensions])),axis=1)
-    d_train2 = np.zeros([x_input.shape[0],dimensions*2])
+    real_train = np.ones([total,dimensions])
+    fake_train = np.zeros([total,dimensions])
+    r_loss, d_loss, g_loss = 0.,0.,0.
     try:
-        def set_trainable(models,flag):
-            for m in models:
-                m.trainable=flag
         for e in range(epoch):
-            for i in range(x_train.shape[0]//batch_size):
+            for i in range(total//batch_size):
+                d = {'teach' : 0, 'deceive' : 0}
+                batch_pb = Progbar(total, width=25)
+                def update():
+                    batch_pb.update(min((i+1)*batch_size,total),
+                                    [('r',r_loss), ('d',d_loss), ('g',g_loss)])
                 x_batch = x_train[i*batch_size:(i+1)*batch_size]
-                d_batch = d_train[i*batch_size:(i+1)*batch_size]
-                d_batch2 = d_train2[i*batch_size:(i+1)*batch_size]
-                encoder.trainable, decoder.trainable = True, True
-                set_trainable(discriminators,False)
+                real_batch = real_train[i*batch_size:(i+1)*batch_size]
+                fake_batch = fake_train[i*batch_size:(i+1)*batch_size]
+                set_trainable(encoder, True)
+                set_trainable(decoder, True)
+                map(lambda d:set_trainable(d,False), discriminators)
                 r_loss = aae_r.train_on_batch(x_batch, x_batch)
-                # 
-                encoder.trainable, decoder.trainable = False, False
-                set_trainable(discriminators,True)
-                d_loss = aae_d.train_on_batch(x_batch, d_batch)
-                # 
-                encoder.trainable, decoder.trainable = True, False
-                set_trainable(discriminators,False)
-                g_loss = aae_g.train_on_batch(x_batch, d_batch2)
-                #
-                losses = [('r',r_loss),
-                          ('d',d_loss),
-                          ('g',-g_loss),
-                          ('d-g',d_loss+g_loss),
-                          ('r+d-g',r_loss+d_loss+g_loss)]
-                batch_pb.update(i*batch_size,losses)
-            print "\nEpoch {}/{}: {}".format(e,epoch,losses)
+                def teach():
+                    d['teach'] += 1
+                    set_trainable(encoder, False)
+                    set_trainable(decoder, False)
+                    map(lambda d:set_trainable(d,True), discriminators)
+                    d_loss = aae_d.train_on_batch(
+                        x_batch, np.concatenate((real_batch,fake_batch),1))
+                def deceive():
+                    d['deceive'] += 1
+                    set_trainable(encoder, True)
+                    set_trainable(decoder, False)
+                    map(lambda d:set_trainable(d,False), discriminators)
+                    g_loss = aae_g.train_on_batch(
+                        x_batch, np.concatenate((real_batch,real_batch),1))
+                teach()
+                deceive()
+                update()
+                while abs(d_loss - g_loss) > 0.01 :
+                    teach()
+                    deceive()
+                    update()
+            print "\nEpoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
+                                                      ('nt',d['teach']), ('nd',d['deceive'])])
     except KeyboardInterrupt:
         print ("learning stopped")
-    plot_examples(name,autoencoder,x_test)
 
-aae_train(name, 1024, 2)
+aae_train(name, 1000, 4)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
@@ -146,3 +161,6 @@ for i, e in enumerate(encoders):
     e.save(name+"/encoder"+str(i)+".h5")
 for i, e in enumerate(discriminators):
     e.save(name+"/discriminator"+str(i)+".h5")
+
+# from util import plot_examples
+# plot_examples(name,autoencoder,x_test)
