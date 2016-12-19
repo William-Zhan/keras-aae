@@ -158,9 +158,10 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
             print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
                                                     ('td',d['discriminator']),
                                                     ('tg',d['generator'])])
-            if (e % 3) == 0:
-                from plot_all import plot_latent
+            if (e % 5) == 0:
+                from plot_all import plot_latent, plot_latent_nolimit
                 plot_latent(encoders[0].predict(x_test),y_test,"style-test-{}.png".format(e))
+                plot_latent_nolimit(encoders[0].predict(x_test),y_test,"style2-test-{}.png".format(e))
     except KeyboardInterrupt:
         print ("learning stopped")
 
