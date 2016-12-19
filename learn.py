@@ -167,7 +167,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 1000, 6)
+aae_train(name, 1000, 1)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
