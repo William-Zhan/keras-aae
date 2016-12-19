@@ -18,15 +18,10 @@ conv_common = {'activation':'relu', 'border_mode':'same'}
 pre_encoder = Sequential(
     (784,),
     [
-        # Reshape((28,28,1)),
-        # Convolution2D(64,3,3,activation='relu'),
-        # BN(),
-        # MaxPooling2D((2,2)),
-        # Flatten(),
         Dense(1000, activation='relu'),
-        # BN(),
+        BN(),
         Dense(1000, activation='relu'),
-        # BN(),
+        BN(),
     ])
 
 def gaussian_distribution (z):
@@ -40,8 +35,8 @@ def categorical_distribution (z):
 
 digit = Latent(6, categorical_distribution, 'sigmoid')
 
-latent_layers = [style,digit]
-# latent_layers = [style]
+# latent_layers = [style,digit]
+latent_layers = [style]
 
 dimensions = len(latent_layers)
 
@@ -83,6 +78,8 @@ encoders    = map(lambda (z): Model(x,z), zs)
 discriminators = map(lambda l: l.discriminator, latent_layers)
 autoencoder = Model(x,y)
 
+noise = Model(x,ns)
+
 aae_r = Model(input=x,output=y)
 aae_r.compile(optimizer=Adam(lr=0.001), loss='mse')
 aae_d = Model(input=x,output=d)
@@ -104,19 +101,17 @@ def set_trainable(net, val):
         for l in net.layers:
             set_trainable(l, val)
 
-def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
+def aae_train (name, epoch=128,computational_effort_factor=8):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
     from keras.utils.generic_utils import Progbar
     from util import mnist, plot_examples
     batch_size = int(epoch * computational_effort_factor)
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
-    x_train,_, x_test,_ = mnist()
+    x_train,y_train, x_test,y_test = mnist()
+    from plot_all import plot_latent
+    plot_latent(noise.predict(x_train),np.zeros_like(y_train),"style-noise.png")
     x_train = x_train[:36000,:]   # for removing residuals
     total = x_train.shape[0]
-    if noise:
-        x_input = add_noise(x_train)
-    else:
-        x_input = x_train
     real_train = np.ones([total,dimensions])
     fake_train = np.zeros([total,dimensions])
     r_loss, d_loss, g_loss = 0.,0.,0.
@@ -155,33 +150,21 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
                     return aae_g.train_on_batch(x_batch, g_batch)
-                if e > 3:                    
+                if e > 20:
                     train_discriminator()
                     train_generator()
-                    adv_pb = Progbar(1000, width=25)
-                    for j in range(1000):
-                        d_loss, g_loss = test()
-                        print [('r',r_loss), ('?', 'd' if d_loss > g_loss else 'g'),
-                               ('d',d_loss), ('g',g_loss),]
-                        if abs(d_loss-g_loss) < 0.01:
-                            break
-                        # adv_pb.update(j, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
-                        if d_loss > g_loss:
-                            train_discriminator()
-                        else:
-                            train_generator()
-                    # for j in range(100):
-                    #     train_discriminator()
-                    #     train_generator()
                 d_loss, g_loss = test()
                 update()
-            print "\nEpoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
-                                                      ('td',d['discriminator']),
-                                                      ('tg',d['generator'])])
+            print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
+                                                    ('td',d['discriminator']),
+                                                    ('tg',d['generator'])])
+            if (e % 3) == 0:
+                from plot_all import plot_latent
+                plot_latent(encoders[0].predict(x_test),y_test,"style-test-{}.png".format(e))
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 1000, 1.0/5)
+aae_train(name, 10000, 0.1)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
