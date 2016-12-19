@@ -93,9 +93,17 @@ def bc(weight):
 aae_r = Model(input=x,output=y)
 aae_r.compile(optimizer=Adam(lr=0.001), loss='mse')
 aae_d = Model(input=x,output=d)
-aae_d.compile(optimizer=Adam(lr=0.00001), loss='binary_crossentropy')
+opt_d = Adam(lr=0.0001)
+aae_d.compile(optimizer=opt_d, loss='binary_crossentropy')
 aae_g = Model(input=x,output=d)
-aae_g.compile(optimizer=Adam(lr=0.00001), loss='binary_crossentropy')
+opt_g = Adam(lr=0.0001)
+aae_g.compile(optimizer=opt_g, loss='binary_crossentropy')
+
+def reduceLR(opt,ratio):
+    old_lr = float(K.get_value(opt.lr))
+    new_lr = 0.7 * old_lr
+    K.set_value(opt.lr,new_lr)
+    print "Reducing learning rate to {}".format(new_lr)
 
 def set_trainable(net, val):
     net.trainable = val
