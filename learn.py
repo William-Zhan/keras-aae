@@ -108,7 +108,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
     from keras.utils.generic_utils import Progbar
     from util import mnist, plot_examples
-    batch_size = epoch * computational_effort_factor
+    batch_size = int(epoch * computational_effort_factor)
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,_, x_test,_ = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
@@ -181,7 +181,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 1000, 1)
+aae_train(name, 1000, 1.0/5)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
