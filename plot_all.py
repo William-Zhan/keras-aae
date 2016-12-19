@@ -39,8 +39,8 @@ def plot_latent(latent,color,name,size=(6,6)):
     plt.figure(figsize=size)
     plt.scatter(latent[:, 0], latent[:, 1], c=color)
     axes = plt.gca()
-    axes.set_xlim([-100,100])
-    axes.set_ylim([-100,100])
+    # axes.set_xlim([-100,100])
+    # axes.set_ylim([-100,100])
     plt.colorbar()
     plt.savefig(name)
 
@@ -64,6 +64,21 @@ result_test = discriminator_digit.predict(digit_test)
 print result_test[:10]
 
 labels_test = np.argmax(digit_test,1)
+
+# concat = np.concatenate(style_test,labels_test,axis=1)
+# 
+# for i in range(10):
+#     plt.subplot(1,10,i)
+#     plt.figure(figsize=(1,1))
+#     latent = concat
+#     flags = np.in1d(labels_test,[i])
+#     style_test.where(
+#     plt.scatter(concat[:, 0], latent[:, 1], c=color)
+#     axes = plt.gca()
+#     axes.set_xlim([-100,100])
+#     axes.set_ylim([-100,100])
+#     plt.colorbar()
+#     plt.savefig(name)
 
 added = np.einsum('xb->bx',np.array([style_test[:,0] + labels_test*100, style_test[:,1]]))
 
