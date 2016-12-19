@@ -210,7 +210,7 @@ class Latent(object):
             [
                 # putting BN in the discriminator worsens the result
                 Dense(1000, activation='relu'),
-                BN(),
+                # BN(),
                 Dense(1000, activation='relu'),
                 Dense(1,    activation='sigmoid'),
             ])

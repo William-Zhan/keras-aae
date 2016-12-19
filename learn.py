@@ -24,9 +24,9 @@ pre_encoder = Sequential(
         # MaxPooling2D((2,2)),
         # Flatten(),
         Dense(1000, activation='relu'),
-        BN(),
+        # BN(),
         Dense(1000, activation='relu'),
-        BN(),
+        # BN(),
     ])
 
 def gaussian_distribution (z):
@@ -49,7 +49,7 @@ decoder = Sequential(
     (reduce(lambda x, y: x+y, map(lambda x: x.dim, latent_layers)),),
     [
         Dense(1000, activation='relu'),
-        BN(),
+        # BN(),
         Dense(1000, activation='relu'),
         Dense(784,  activation='sigmoid'),
     ])
