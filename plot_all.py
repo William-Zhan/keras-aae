@@ -51,8 +51,9 @@ style_train = encoder_style.predict(x_train)
 plot_latent(style_train,y_train,"style-train.png")
 
 
-# encoder_digit = keras.models.load_model(name+'/encoder1.h5')
-# discriminator_digit = keras.models.load_model(name+'/discriminator1.h5')
+
+encoder_digit = keras.models.load_model(name+'/encoder1.h5')
+discriminator_digit = keras.models.load_model(name+'/discriminator1.h5')
 
 digit_test = encoder_digit.predict(x_test)
 
