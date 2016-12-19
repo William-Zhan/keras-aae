@@ -207,3 +207,47 @@ for i, e in enumerate(discriminators):
 # while True:
 #     if train_generator() < 0.1:
 #         break
+
+# idea 4
+# while True:
+#     if train_discriminator() < 0.1:
+#         break
+# while True:
+#     if train_generator() < 0.1:
+#         break
+# d_loss, g_loss = test()
+# update()
+
+# idea 5
+#  and d_loss < 1. and g_loss < 1.
+
+# a = np.concatenate((fake_batch,real_batch),1)
+# np.random.shuffle(a)
+# return aae_g.train_on_batch(x_batch, a)
+# 
+# while True:
+#     adv_pb = Progbar(1000, width=20)
+#     for j in range(10):
+#         d_loss, g_loss = test()
+#         adv_pb.update(j+1, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
+#         if d_loss > g_loss:
+#             train_discriminator()
+#         else:
+#             train_generator()
+#     if abs(d_loss-g_loss) < 0.1:
+#         print "early stop"
+#         break
+
+# idea 6
+# # adv_pb = Progbar(1000, width=20)
+# for j in range(1000):
+#     d_loss = train_discriminator()
+#     # adv_pb.update(j+1, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
+#     if d_loss < 0.4:
+#         break
+# # adv_pb = Progbar(1000, width=20)
+# for j in range(1000):
+#     g_loss = train_generator()
+#     # adv_pb.update(j+1, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
+#     if g_loss < 0.4:
+#         break
