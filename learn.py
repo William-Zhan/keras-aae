@@ -93,9 +93,9 @@ def bc(weight):
 aae_r = Model(input=x,output=y)
 aae_r.compile(optimizer=Adam(lr=0.001), loss='mse')
 aae_d = Model(input=x,output=d)
-aae_d.compile(optimizer=Adam(lr=0.0001), loss='binary_crossentropy')
+aae_d.compile(optimizer=Adam(lr=0.00001), loss='binary_crossentropy')
 aae_g = Model(input=x,output=d)
-aae_g.compile(optimizer=Adam(lr=0.0001), loss='binary_crossentropy')
+aae_g.compile(optimizer=Adam(lr=0.00001), loss='binary_crossentropy')
 
 def set_trainable(net, val):
     net.trainable = val
@@ -154,9 +154,24 @@ def aae_train (name, epoch=128,computational_effort_factor=8,noise=False):
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
                     return aae_g.train_on_batch(x_batch, g_batch)
-                for j in range(1):
+                if e > 3:                    
                     train_discriminator()
                     train_generator()
+                    adv_pb = Progbar(1000, width=25)
+                    for j in range(1000):
+                        d_loss, g_loss = test()
+                        print [('r',r_loss), ('?', 'd' if d_loss > g_loss else 'g'),
+                               ('d',d_loss), ('g',g_loss),]
+                        if abs(d_loss-g_loss) < 0.01:
+                            break
+                        # adv_pb.update(j, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
+                        if d_loss > g_loss:
+                            train_discriminator()
+                        else:
+                            train_generator()
+                    # for j in range(100):
+                    #     train_discriminator()
+                    #     train_generator()
                 d_loss, g_loss = test()
                 update()
             print "\nEpoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
@@ -191,6 +206,7 @@ for i, e in enumerate(discriminators):
 #     train_generator()
 #     d_loss, g_loss = test()
 #     update()
+
 # idea 2
 # while abs(d_loss-g_loss) > 0.01:
 #     if d_loss > g_loss:
@@ -199,6 +215,7 @@ for i, e in enumerate(discriminators):
 #         train_generator()
 #     d_loss, g_loss = test()
 #     update()
+
 # idea 3
 # while True:
 #     d_loss, g_loss = test()
