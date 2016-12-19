@@ -60,7 +60,8 @@ z1 = pre_encoder(x)
 latent_nodes = np.array(map(lambda l: l(z1), latent_layers))
 
 zs = list(latent_nodes[:,0])
-ds = list(latent_nodes[:,1:].transpose().flatten())
+ds = list(latent_nodes[:,1:3].transpose().flatten())
+ns = list(latent_nodes[:,3])
 # ^^^ [[real,fake],[real,fake],...] -> [real,real...,fake,fake...]
 print zs
 print ds
@@ -69,8 +70,10 @@ def concatenate(tensors):
     return tf.concat(1, tensors)
 
 z = Lambda(concatenate)(zs)
-y = decoder(z)
 d = Lambda(concatenate)(ds)
+n = Lambda(concatenate)(ns)
+
+y = decoder(z)
 
 print z
 print d
