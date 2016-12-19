@@ -29,8 +29,8 @@ def plot_latent(latent,color,name,size=(6,6)):
     plt.figure(figsize=size)
     plt.scatter(latent[:, 0], latent[:, 1], c=color)
     axes = plt.gca()
-    axes.set_xlim([-100,100])
-    axes.set_ylim([-100,100])
+    axes.set_xlim([-10,10])
+    axes.set_ylim([-10,10])
     plt.colorbar()
     plt.savefig(name)
 
