@@ -80,15 +80,8 @@ print d
 
 encoder     = Model(x,z)
 encoders    = map(lambda (z): Model(x,z), zs)
-# discriminator  = Model(z,d)
-# discriminators = map(lambda (z,d): Model(z,d), zs, ds)
 discriminators = map(lambda l: l.discriminator, latent_layers)
 autoencoder = Model(x,y)
-
-from keras.objectives import binary_crossentropy
-def bc(weight):
-    return lambda x,y: weight * binary_crossentropy(x,y)
-
 
 aae_r = Model(input=x,output=y)
 aae_r.compile(optimizer=Adam(lr=0.001), loss='mse')
