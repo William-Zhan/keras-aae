@@ -177,7 +177,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     for _k in range(k):
                         d_loss = train_discriminator()
                     g_loss = train_generator()
-            if pretraining and np.mean(r_losses) < 0.024:
+            if pretraining and np.mean(r_losses) < 0.027:
                 pretraining = False
                 print "pretraining finished"
                 K.set_value(opt_r.lr, 0.001)
