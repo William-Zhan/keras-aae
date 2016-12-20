@@ -41,7 +41,8 @@ def plot_latent_nolimit(latent,color,name,size=(6,6)):
     plt.colorbar()
     plt.savefig(name)
 
-def plot_digit(digit,color,name,max_label=6):
+def plot_digit(digit,color,name):
+    max_label=digit.shape[1]
     plt.figure(figsize=(30,10))
     for i in range(max_label):
         plt.scatter(((np.random.random_sample(digit.shape[0])-0.5)*0.9+i),
