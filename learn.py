@@ -158,8 +158,9 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     map(lambda d:set_trainable(d,False), discriminators)
                     return aae_g.train_on_batch(x_batch, g_batch)
                 r_loss = train_autoencoder()
-                d_loss = train_discriminator()
-                g_loss = train_generator()
+                if e > 100:
+                    d_loss = train_discriminator()
+                    g_loss = train_generator()
     except KeyboardInterrupt:
         print ("learning stopped")
 
