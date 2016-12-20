@@ -68,15 +68,24 @@ if __name__ == '__main__':
     discriminator_digit = keras.models.load_model(name+'/discriminator0.h5')
 
     digit_test = encoder_digit.predict(x_test)
-
+    
     print digit_test[:10]
     print np.sum(digit_test,axis=1)
-
+    
     result_test = discriminator_digit.predict(digit_test)
     
     print result_test[:10]
 
     plot_digit(digit_test,y_test,"digit-test.png")
+
+    indices = np.argmax(digit_test,axis=1)
+    print indices
+    digit_test_argmax = digit_test[np.arange(digit_test.shape[0]),indices]
+    print digit_test_argmax
+    digit_test_zero_except_argmax = np.zeros_like(digit_test)
+    digit_test_zero_except_argmax[np.arange(digit_test.shape[0]),indices] = digit_test_argmax
+    print digit_test_zero_except_argmax
+    plot_digit(digit_test_zero_except_argmax,y_test,"digit-test-argmax.png")
     
     x_test_reconstructed = autoencoder.predict(x_test)
     n = 24  # how many digits we will display
