@@ -26,10 +26,10 @@ pre_encoder = Sequential(
 
 def gaussian_distribution (z):
     return K.random_normal(shape=K.shape(z), mean=0., std=1.)
-def gaussian_distribution_np (shape):
-    return np.random.normal(0.,1.,shape)
+def gaussian_distribution_np (batch_size, latent_dim):
+    return np.random.normal(0.,1.,(batch_size, latent_dim))
 
-style = Latent(1,gaussian_distribution,'linear')
+style = Latent(1,gaussian_distribution_np,'linear')
 
 n_category = 16
 
@@ -37,14 +37,13 @@ def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=n_category, dtype='int32')
     return K.one_hot(uni, n_category)
 
-def categorical_distribution_np (shape):
-    assert len(shape)==2
-    a = np.random.random_integers(0,shape[1]-1,shape[0])
-    b = np.zeros(shape)
-    b[np.arange(shape[0]), a] = 1
+def categorical_distribution_np (batch_size, latent_dim):
+    a = np.random.random_integers(0,latent_dim-1,batch_size)
+    b = np.zeros((batch_size, latent_dim))
+    b[np.arange(batch_size), a] = 1
     return b
 
-digit = Latent(n_category, categorical_distribution, 'softmax')
+digit = Latent(n_category, categorical_distribution_np, 'softmax')
 
 # latent_layers = [digit,style]
 # latent_layers = [style]
@@ -67,7 +66,6 @@ z1 = pre_encoder(x)
 latent_nodes = np.array(map(lambda l: l(z1), latent_layers))
 
 zs = list(latent_nodes[:,0])
-ds = list(latent_nodes[:,1:3].transpose().flatten())
 d1s = list(latent_nodes[:,1])
 d2s = list(latent_nodes[:,2])
 ns = list(latent_nodes[:,3])
@@ -77,7 +75,6 @@ def concatenate(tensors):
     return tf.concat(1, tensors)
 
 z = Lambda(concatenate)(zs)
-d = Lambda(concatenate)(ds)
 d1 = Lambda(concatenate)(d1s)
 d2 = Lambda(concatenate)(d2s)
 n = Lambda(concatenate)(ns)
@@ -89,17 +86,21 @@ encoders    = map(lambda (z): Model(x,z), zs)
 discriminators = map(lambda l: l.discriminator, latent_layers)
 autoencoder = Model(x,y)
 
-noise = Model(x,ns)
-
 aae_r = Model(input=x,output=y)
 opt_r = Adam(lr=0.001)
 aae_r.compile(optimizer=opt_r, loss='mse')
-aae_d = Model(input=x,output=d)
+aae_d = Model(input=x,output=d1)
 opt_d = Adam(lr=0.001)
 aae_d.compile(optimizer=opt_d, loss='binary_crossentropy')
-aae_g = Model(input=x,output=d)
+aae_g = Model(input=x,output=d1)
 opt_g = Adam(lr=0.001)
 aae_g.compile(optimizer=opt_g, loss='binary_crossentropy')
+aae_nd = Model(input=ns,output=d2s)
+opt_nd = Adam(lr=0.001)
+aae_nd.compile(optimizer=opt_nd, loss='binary_crossentropy')
+aae_ng = Model(input=ns,output=d2s)
+opt_ng = Adam(lr=0.001)
+aae_ng.compile(optimizer=opt_ng, loss='binary_crossentropy')
 
 def reduceLR(opt,ratio):
     old_lr = float(K.get_value(opt.lr))
@@ -138,10 +139,9 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     pb.update(e*(total//batch_size)+i, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
                 update()
                 x_batch = x_train[i*batch_size:(i+1)*batch_size]
+                n_batch = np.concatenate([l.sample(batch_size) for l in latent_layers],axis=1)
                 real_batch = real_train[i*batch_size:(i+1)*batch_size]
                 fake_batch = fake_train[i*batch_size:(i+1)*batch_size]
-                d_batch = np.concatenate((fake_batch,real_batch),1)
-                g_batch = np.concatenate((real_batch,real_batch),1)
                 def train_autoencoder():
                     set_trainable(encoder, True)
                     set_trainable(decoder, True)
@@ -151,12 +151,14 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     set_trainable(encoder, False)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,True), discriminators)
-                    return aae_d.train_on_batch(x_batch, d_batch)
+                    return aae_d.train_on_batch(x_batch, fake_batch) + \
+                        aae_nd.train_on_batch(n_batch, real_batch)
                 def train_generator():
                     set_trainable(encoder, True)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
-                    return aae_g.train_on_batch(x_batch, g_batch)
+                    return aae_g.train_on_batch(x_batch, real_batch) + \
+                        aae_ng.train_on_batch(n_batch, real_batch)
                 r_loss = train_autoencoder()
                 if e > 100:
                     d_loss = train_discriminator()

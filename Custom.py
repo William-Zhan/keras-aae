@@ -203,7 +203,7 @@ class Latent(object):
     def __init__(self, latent_dim, sample_fn, activation='linear'):
         from keras.layers.normalization import BatchNormalization as BN
         self.dim = latent_dim
-        self.sampler = Lambda(sample_fn, output_shape=(latent_dim,))
+        self.sampler = sample_fn
         self.encoder = Dense(latent_dim, activation=activation)
         self.discriminator = Sequential(
             (latent_dim,),
@@ -217,10 +217,12 @@ class Latent(object):
     def __call__ (self,pre_z):
         import tensorflow as tf
         z = self.encoder(pre_z)
-        n = self.sampler(z)
-        # n2 = self.sampler(K.ones_like(z)-z)
+        n = Input(z.get_shape()[1:])
         with tf.variable_scope("discriminator") as scope:
             d1 = self.discriminator(z)
             scope.reuse_variables()
             d2 = self.discriminator(n)
         return z, d1, d2, n
+    def sample(self,batch_size):
+        return self.sampler(batch_size, self.dim)
+
