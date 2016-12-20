@@ -95,10 +95,10 @@ aae_r = Model(input=x,output=y)
 opt_r = Adam(lr=0.001)
 aae_r.compile(optimizer=opt_r, loss='mse')
 aae_d = Model(input=x,output=d)
-opt_d = SGD(lr=0.001)
+opt_d = Adam(lr=0.001)
 aae_d.compile(optimizer=opt_d, loss='binary_crossentropy')
 aae_g = Model(input=x,output=d)
-opt_g = SGD(lr=0.001)
+opt_g = Adam(lr=0.001)
 aae_g.compile(optimizer=opt_g, loss='binary_crossentropy')
 
 def reduceLR(opt,ratio):
