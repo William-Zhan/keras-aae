@@ -123,18 +123,15 @@ def aae_train (name, epoch=1000,batch_size=18000):
     fake_train = np.zeros([total,dimensions])
     r_loss, d_loss, g_loss = 0.,0.,0.
     try:
+        pb = Progbar(epoch*(total//batch_size), width=25)
         for e in range(epoch):
             d = {'discriminator' : 0, 'generator' : 0}
             if (e % (epoch//10)) == 0:
                 plot_digit(encoders[0].predict(x_test),y_test,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
+                def update():
+                    pb.update(e*(total//batch_size)+i, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
                 update()
-                batch_pb = Progbar(total, width=25)
-                def update(force=False):
-                    batch_pb.update(min((i+1)*batch_size,total),
-                                    [('r',r_loss), ('d',d_loss), ('g',g_loss),
-                                     # ('d-g',(d_loss-g_loss))
-                                    ], force=force)
                 x_batch = x_train[i*batch_size:(i+1)*batch_size]
                 real_batch = real_train[i*batch_size:(i+1)*batch_size]
                 fake_batch = fake_train[i*batch_size:(i+1)*batch_size]
@@ -165,10 +162,6 @@ def aae_train (name, epoch=1000,batch_size=18000):
                 r_loss = train_autoencoder()
                 d_loss = train_discriminator()
                 g_loss = train_generator()
-                # r_loss, d_loss, g_loss = test()
-            print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
-                                                    ('td',d['discriminator']),
-                                                    ('tg',d['generator'])])
     except KeyboardInterrupt:
         print ("learning stopped")
 
