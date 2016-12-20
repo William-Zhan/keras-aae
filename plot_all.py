@@ -41,17 +41,16 @@ def plot_latent_nolimit(latent,color,name,size=(6,6)):
     plt.colorbar()
     plt.savefig(name)
 
-def plot_digit(digit,color,name):
-    plt.figure(figsize=(10,30))
-    for i in range(6):
-        plt.scatter(np.random.random_sample(digit.shape[0])*0.7+i,
+def plot_digit(digit,color,name,max_label=6):
+    plt.figure(figsize=(30,10))
+    for i in range(max_label):
+        plt.scatter(((np.random.random_sample(digit.shape[0])-0.5)*0.9+i),
                     digit[:,i],
                     # s=2,
                     c=color)
     axes = plt.gca()
     plt.colorbar()
     plt.savefig(name)
-    
     
 if __name__ == '__main__':
 
