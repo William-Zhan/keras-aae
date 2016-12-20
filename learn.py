@@ -71,9 +71,7 @@ ds = list(latent_nodes[:,1:3].transpose().flatten())
 d1s = list(latent_nodes[:,1])
 d2s = list(latent_nodes[:,2])
 ns = list(latent_nodes[:,3])
-# ^^^ [[real,fake],[real,fake],...] -> [real,real...,fake,fake...]
-print zs
-print ds
+
 def concatenate(tensors):
     import tensorflow as tf
     return tf.concat(1, tensors)
@@ -85,9 +83,6 @@ d2 = Lambda(concatenate)(d2s)
 n = Lambda(concatenate)(ns)
 
 y = decoder(z)
-
-print z
-print d
 
 encoder     = Model(x,z)
 encoders    = map(lambda (z): Model(x,z), zs)
