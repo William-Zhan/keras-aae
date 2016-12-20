@@ -142,11 +142,6 @@ def aae_train (name, epoch=1000,batch_size=18000):
                 fake_batch = fake_train[i*batch_size:(i+1)*batch_size]
                 d_batch = np.concatenate((fake_batch,real_batch),1)
                 g_batch = np.concatenate((real_batch,real_batch),1)
-                def test():
-                    return \
-                        aae_r.test_on_batch(x_batch, x_batch), \
-                        aae_d.test_on_batch(x_batch, d_batch), \
-                        aae_g.test_on_batch(x_batch, g_batch)
                 def train_autoencoder():
                     set_trainable(encoder, True)
                     set_trainable(decoder, True)
