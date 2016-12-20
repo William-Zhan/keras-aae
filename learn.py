@@ -159,8 +159,11 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     set_trainable(encoder, True)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
-                    return aae_g.train_on_batch(x_batch, real_batch) + \
-                        aae_ng.train_on_batch(n_batch, real_batch)
+                    return aae_g.train_on_batch(x_batch, real_batch)
+                    # return aae_g.train_on_batch(x_batch, real_batch) + \
+                    #     aae_ng.train_on_batch(n_batch, real_batch)
+                # d_loss = train_discriminator()
+                # g_loss = train_generator()
                 r_loss = train_autoencoder()
                 val_loss = aae_r.test_on_batch(x_batch, x_batch)
                 if r_loss < 0.02 or not pretraining:
