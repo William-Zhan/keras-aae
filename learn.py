@@ -114,7 +114,7 @@ def set_trainable(net, val):
 def aae_train (name, epoch=1000,batch_size=18000):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
     from keras.utils.generic_utils import Progbar
-    from util import mnist, plot_examples
+    from util import mnist, plot_examples, plot_digits
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
@@ -125,6 +125,8 @@ def aae_train (name, epoch=1000,batch_size=18000):
     try:
         for e in range(epoch):
             d = {'discriminator' : 0, 'generator' : 0}
+            if (e % (epoch//10)) == 0:
+                plot_digit(encoders[0].predict(x_test),y_test,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
                 batch_pb = Progbar(total, width=25)
                 def update(force=False):
