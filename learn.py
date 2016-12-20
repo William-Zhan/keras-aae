@@ -29,7 +29,7 @@ def gaussian_distribution (z):
 
 style = Latent(1,gaussian_distribution,'linear')
 
-n_category = 6
+n_category = 16
 
 def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=n_category, dtype='int32')
