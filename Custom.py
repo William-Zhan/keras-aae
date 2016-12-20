@@ -203,7 +203,7 @@ class Latent(object):
     def __init__(self, latent_dim, sample_fn, activation='linear'):
         from keras.layers.normalization import BatchNormalization as BN
         self.dim = latent_dim
-        self.sampler = Lambda(sample_fn)
+        self.sampler = Lambda(sample_fn, output_shape=(latent_dim,))
         self.encoder = Dense(latent_dim, activation=activation)
         self.discriminator = Sequential(
             (latent_dim,),

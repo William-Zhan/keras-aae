@@ -8,7 +8,7 @@ from keras import regularizers
 from keras.layers.normalization import BatchNormalization as BN
 from keras import backend as K
 from util import train, train_stack, retrieve_stack, name
-from keras.optimizers import Adam, RMSprop
+from keras.optimizers import Adam, RMSprop, SGD
 import numpy as np
 import os
 import tensorflow as tf
@@ -25,7 +25,7 @@ pre_encoder = Sequential(
     ])
 
 def gaussian_distribution (z):
-    return K.random_normal(shape=K.shape(z), mean=0., std=1.)
+    return K.random_normal(shape=K.shape(z), mean=0., std=5.)
 
 style = Latent(2,gaussian_distribution,'linear')
 
@@ -33,7 +33,7 @@ def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=6, dtype='int32')
     return K.one_hot(uni, 6)
 
-digit = Latent(6, categorical_distribution, 'sigmoid')
+digit = Latent(6, categorical_distribution, 'softmax')
 
 # latent_layers = [style,digit]
 latent_layers = [style]
@@ -81,13 +81,20 @@ autoencoder = Model(x,y)
 noise = Model(x,ns)
 
 aae_r = Model(input=x,output=y)
-aae_r.compile(optimizer=Adam(lr=0.001), loss='mse')
+opt_r = Adam(lr=0.0001)
+aae_r.compile(optimizer=opt_r, loss='mse')
 aae_d = Model(input=x,output=d)
-opt_d = Adam(lr=0.0001)
+opt_d = SGD(lr=0.001)
 aae_d.compile(optimizer=opt_d, loss='binary_crossentropy')
 aae_g = Model(input=x,output=d)
-opt_g = Adam(lr=0.0001)
+opt_g = SGD(lr=0.001)
 aae_g.compile(optimizer=opt_g, loss='binary_crossentropy')
+
+aae_r.summary()
+aae_d.summary()
+aae_g.summary()
+for l in latent_layers:
+    l.discriminator.summary()
 
 def reduceLR(opt,ratio):
     old_lr = float(K.get_value(opt.lr))
@@ -130,12 +137,14 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
                 fake_batch = fake_train[i*batch_size:(i+1)*batch_size]
                 d_batch = np.concatenate((fake_batch,real_batch),1)
                 g_batch = np.concatenate((real_batch,real_batch),1)
-                set_trainable(encoder, True)
-                set_trainable(decoder, True)
-                map(lambda d:set_trainable(d,False), discriminators)
-                r_loss = aae_r.train_on_batch(x_batch, x_batch)
+                def train_autoencoder():
+                    set_trainable(encoder, True)
+                    set_trainable(decoder, True)
+                    map(lambda d:set_trainable(d,False), discriminators)
+                    return aae_r.train_on_batch(x_batch, x_batch)
                 def test():
                     return \
+                        aae_r.test_on_batch(x_batch, x_batch), \
                         aae_d.test_on_batch(x_batch, d_batch), \
                         aae_g.test_on_batch(x_batch, g_batch)
                 def train_discriminator():
@@ -150,18 +159,20 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
                     return aae_g.train_on_batch(x_batch, g_batch)
-                if e > 20:
-                    train_discriminator()
-                    train_generator()
-                d_loss, g_loss = test()
+                # r_loss = train_autoencoder()
+                d_loss = train_discriminator()
+                g_loss = train_generator()
+                r_loss, d_loss, g_loss = test()
                 update()
             print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
                                                     ('td',d['discriminator']),
                                                     ('tg',d['generator'])])
-            if (e % 5) == 0:
+            if (e % 120) == 0:
                 from plot_all import plot_latent, plot_latent_nolimit
-                plot_latent(encoders[0].predict(x_test),y_test,"style-test-{}.png".format(e))
-                plot_latent_nolimit(encoders[0].predict(x_test),y_test,"style2-test-{}.png".format(e))
+                r_loss, d_loss, g_loss = test()
+                z_test = encoders[0].predict(x_test)
+                plot_latent(z_test,y_test,"style-test-{}.png".format(e))
+                plot_latent_nolimit(z_test,y_test,"style2-test-{}.png".format(e))
     except KeyboardInterrupt:
         print ("learning stopped")
 
