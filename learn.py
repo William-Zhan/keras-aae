@@ -25,11 +25,11 @@ pre_encoder = Sequential(
     ])
 
 def gaussian_distribution (z):
-    return K.random_normal(shape=K.shape(z), mean=0., std=5.)
+    return K.random_normal(shape=K.shape(z), mean=0., std=1.)
 
-style = Latent(5,gaussian_distribution,'linear')
+style = Latent(1,gaussian_distribution,'linear')
 
-n_category = 7
+n_category = 6
 
 def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=n_category, dtype='int32')
@@ -128,6 +128,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
             if (e % (epoch//10)) == 0:
                 plot_digit(encoders[0].predict(x_test),y_test,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
+                update()
                 batch_pb = Progbar(total, width=25)
                 def update(force=False):
                     batch_pb.update(min((i+1)*batch_size,total),
@@ -165,7 +166,6 @@ def aae_train (name, epoch=1000,batch_size=18000):
                 d_loss = train_discriminator()
                 g_loss = train_generator()
                 # r_loss, d_loss, g_loss = test()
-                update()
             print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
                                                     ('td',d['discriminator']),
                                                     ('tg',d['generator'])])
