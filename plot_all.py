@@ -50,6 +50,7 @@ def plot_digit(digit,color,name):
                     # s=2,
                     c=color)
     axes = plt.gca()
+    axes.set_ylim([-0.1,1.1])
     plt.colorbar()
     plt.savefig(name)
     
