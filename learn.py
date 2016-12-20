@@ -86,7 +86,7 @@ discriminators = map(lambda l: l.discriminator, latent_layers)
 autoencoder = Model(x,y)
 
 aae_r = Model(input=x,output=y)
-opt_r = Adam(lr=0.001)
+opt_r = Adam(lr=0.01)
 aae_r.compile(optimizer=opt_r, loss='mse')
 aae_d = Model(input=x,output=d1)
 opt_d = Adam(lr=0.001)
@@ -165,6 +165,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     if pretraining:
                         pretraining = False
                         print "pretraining finished"
+                        K.set_value(opt_r.lr, 0.001)
                     d_loss = train_discriminator()
                     g_loss = train_generator()
     except KeyboardInterrupt:
