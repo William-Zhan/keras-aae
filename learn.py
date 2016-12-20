@@ -84,7 +84,7 @@ autoencoder = Model(x,y)
 noise = Model(x,ns)
 
 aae_r = Model(input=x,output=y)
-opt_r = Adam(lr=0.0001)
+opt_r = Adam(lr=0.001)
 aae_r.compile(optimizer=opt_r, loss='mse')
 aae_d = Model(input=x,output=d)
 opt_d = SGD(lr=0.001)
