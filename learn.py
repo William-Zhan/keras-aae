@@ -137,6 +137,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
     try:
         pb = Progbar(epoch*minibatch_per_epoch, width=25)
         for e in range(epoch):
+            r_losses = []
             if (e % plot_epoch) == 0:
                 plot_digit(encoders[0].predict(x_plot),y_plot,"digit-test-{}.png".format(e))
             for i in range(minibatch_per_epoch):
@@ -169,14 +170,17 @@ def aae_train (name, epoch=1000,batch_size=18000):
                 # g_loss = train_generator()
                 r_loss = train_autoencoder()
                 val_loss = aae_r.test_on_batch(x_batch, x_batch)
-                if e*minibatch_per_epoch+i > 1000 or not pretraining:
-                    if pretraining:
-                        pretraining = False
-                        print "pretraining finished"
-                        K.set_value(opt_r.lr, 0.001)
+                if pretraining:
+                    r_losses.append(r_loss)
+                else:
                     for _k in range(k):
                         d_loss = train_discriminator()
                     g_loss = train_generator()
+            if pretraining and np.mean(r_losses) < 0.03:
+                pretraining = False
+                print "pretraining finished"
+                K.set_value(opt_r.lr, 0.001)
+
     except KeyboardInterrupt:
         print ("learning stopped")
 
