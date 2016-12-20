@@ -140,6 +140,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
             r_losses = []
             if (e % plot_epoch) == 0:
                 plot_digit(encoders[0].predict(x_plot),y_plot,"digit-test-{}.png".format(e))
+                pb = Progbar(epoch*minibatch_per_epoch, width=25)
             for i in range(minibatch_per_epoch):
                 def update():
                     pb.update(e*minibatch_per_epoch+i, [('r',r_loss), ('val',val_loss), ('d',d_loss), ('g',g_loss),])
@@ -176,7 +177,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     for _k in range(k):
                         d_loss = train_discriminator()
                     g_loss = train_generator()
-            if pretraining and np.mean(r_losses) < 0.03:
+            if pretraining and np.mean(r_losses) < 0.02:
                 pretraining = False
                 print "pretraining finished"
                 K.set_value(opt_r.lr, 0.001)
