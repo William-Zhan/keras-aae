@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from keras.layers import Input, Lambda, Dense, Dropout
+from keras.layers import Input, Lambda, Dense, Dropout, Activation
 from keras.models import Model
 
 def Sequential (input_shape, array):
