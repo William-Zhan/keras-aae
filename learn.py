@@ -119,6 +119,8 @@ def aae_train (name, epoch=1000,batch_size=18000):
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
+    x_test = x_test[:1000,:]
+    y_test = y_test[:1000]
     total = x_train.shape[0]
     real_train = np.ones([total,dimensions])
     fake_train = np.zeros([total,dimensions])
