@@ -93,12 +93,6 @@ aae_g = Model(input=x,output=d)
 opt_g = SGD(lr=0.001)
 aae_g.compile(optimizer=opt_g, loss='binary_crossentropy')
 
-aae_r.summary()
-aae_d.summary()
-aae_g.summary()
-for l in latent_layers:
-    l.discriminator.summary()
-
 def reduceLR(opt,ratio):
     old_lr = float(K.get_value(opt.lr))
     new_lr = 0.7 * old_lr
