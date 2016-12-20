@@ -126,7 +126,6 @@ def aae_train (name, epoch=1000,batch_size=18000):
     try:
         pb = Progbar(epoch*(total//batch_size), width=25)
         for e in range(epoch):
-            d = {'discriminator' : 0, 'generator' : 0}
             if (e % (epoch//10)) == 0:
                 plot_digit(encoders[0].predict(x_test),y_test,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
@@ -149,13 +148,11 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     map(lambda d:set_trainable(d,False), discriminators)
                     return aae_r.train_on_batch(x_batch, x_batch)
                 def train_discriminator():
-                    d['discriminator'] += 1
                     set_trainable(encoder, False)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,True), discriminators)
                     return aae_d.train_on_batch(x_batch, d_batch)
                 def train_generator():
-                    d['generator'] += 1
                     set_trainable(encoder, True)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
