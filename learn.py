@@ -20,8 +20,10 @@ pre_encoder = Sequential(
     [
         Dense(1000, activation='relu'),
         BN(),
+        Dropout(0.5),
         Dense(1000, activation='relu'),
         BN(),
+        Dropout(0.5),
     ])
 
 def gaussian_distribution (z):

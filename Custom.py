@@ -212,8 +212,10 @@ class Latent(object):
                 BN(),
                 Dense(1000, activation='relu'),
                 BN(),
+                Dropout(0.5),
                 Dense(1000, activation='relu'),
                 BN(),
+                Dropout(0.5),
                 Dense(1,    activation=None),
                 BN(),           # crucial
                 Activation('sigmoid')
