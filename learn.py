@@ -55,7 +55,6 @@ decoder = Sequential(
     (reduce(lambda x, y: x+y, map(lambda x: x.dim, latent_layers)),),
     [
         Dense(1000, activation='relu'),
-        # BN(),
         Dense(1000, activation='relu'),
         Dense(784,  activation='sigmoid'),
     ])
@@ -122,21 +121,22 @@ def aae_train (name, epoch=1000,batch_size=18000):
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
-    x_test = x_test[:1000,:]
-    y_test = y_test[:1000]
+    x_plot = x_test[:1000,:]
+    y_plot = y_test[:1000]
     total = x_train.shape[0]
     real_train = np.ones([total,dimensions])
     fake_train = np.zeros([total,dimensions])
-    r_loss, d_loss, g_loss = 0.,0.,0.
-    plot_epoch = epoch//40
+    r_loss, val_loss, d_loss, g_loss = 0.,0.,0.,0.
+    plot_epoch = epoch//200
     try:
         pb = Progbar(epoch*(total//batch_size), width=25)
         for e in range(epoch):
+            # val_loss = aae_r.evaluate(x_test, x_test)
             if (e % plot_epoch) == 0:
-                plot_digit(encoders[0].predict(x_test),y_test,"digit-test-{}.png".format(e))
+                plot_digit(encoders[0].predict(x_plot),y_plot,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
                 def update():
-                    pb.update(e*(total//batch_size)+i, [('r',r_loss), ('d',d_loss), ('g',g_loss),])
+                    pb.update(e*(total//batch_size)+i, [('r',r_loss), ('val',val_loss), ('d',d_loss), ('g',g_loss),])
                 update()
                 x_batch = x_train[i*batch_size:(i+1)*batch_size]
                 n_batch = np.concatenate([l.sample(batch_size) for l in latent_layers],axis=1)
@@ -160,13 +160,14 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     return aae_g.train_on_batch(x_batch, real_batch) + \
                         aae_ng.train_on_batch(n_batch, real_batch)
                 r_loss = train_autoencoder()
-                if e > 100:
+                val_loss = aae_r.test_on_batch(x_batch, x_batch)
+                if e > 30:
                     d_loss = train_discriminator()
                     g_loss = train_generator()
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 1000, 18000)
+aae_train(name, 1000, 1000)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
