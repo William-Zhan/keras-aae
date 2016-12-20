@@ -37,9 +37,9 @@ def categorical_distribution (z):
 
 digit = Latent(n_category, categorical_distribution, 'softmax')
 
-latent_layers = [digit,style]
+# latent_layers = [digit,style]
 # latent_layers = [style]
-# latent_layers = [digit]
+latent_layers = [digit]
 
 dimensions = len(latent_layers)
 
