@@ -209,10 +209,14 @@ class Latent(object):
             (latent_dim,),
             [
                 # putting BN in the discriminator worsens the result
+                BN(),
                 Dense(1000, activation='relu'),
-                # BN(),
+                BN(),
                 Dense(1000, activation='relu'),
-                Dense(1,    activation='sigmoid'),
+                BN(),
+                Dense(1,    activation=None),
+                BN(),           # crucial
+                Activation('sigmoid')
             ])
     def __call__ (self,pre_z):
         import tensorflow as tf

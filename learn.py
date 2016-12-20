@@ -31,7 +31,7 @@ def gaussian_distribution_np (batch_size, latent_dim):
 
 style = Latent(1,gaussian_distribution_np,'linear')
 
-n_category = 16
+n_category = 6
 
 def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=n_category, dtype='int32')
@@ -161,7 +161,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
                         aae_ng.train_on_batch(n_batch, real_batch)
                 r_loss = train_autoencoder()
                 val_loss = aae_r.test_on_batch(x_batch, x_batch)
-                if e > 30:
+                if e > 10:
                     d_loss = train_discriminator()
                     g_loss = train_generator()
     except KeyboardInterrupt:
