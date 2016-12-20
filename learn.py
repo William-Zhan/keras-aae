@@ -26,6 +26,8 @@ pre_encoder = Sequential(
 
 def gaussian_distribution (z):
     return K.random_normal(shape=K.shape(z), mean=0., std=1.)
+def gaussian_distribution_np (shape):
+    return np.random.normal(0.,1.,shape)
 
 style = Latent(1,gaussian_distribution,'linear')
 
@@ -34,6 +36,13 @@ n_category = 16
 def categorical_distribution (z):
     uni = K.random_uniform(shape=(K.shape(z)[0],), low=0, high=n_category, dtype='int32')
     return K.one_hot(uni, n_category)
+
+def categorical_distribution_np (shape):
+    assert len(shape)==2
+    a = np.random.random_integers(0,shape[1]-1,shape[0])
+    b = np.zeros(shape)
+    b[np.arange(shape[0]), a] = 1
+    return b
 
 digit = Latent(n_category, categorical_distribution, 'softmax')
 
