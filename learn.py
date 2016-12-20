@@ -27,7 +27,7 @@ pre_encoder = Sequential(
 def gaussian_distribution (z):
     return K.random_normal(shape=K.shape(z), mean=0., std=5.)
 
-style = Latent(2,gaussian_distribution,'linear')
+style = Latent(5,gaussian_distribution,'linear')
 
 n_category = 7
 
@@ -37,9 +37,9 @@ def categorical_distribution (z):
 
 digit = Latent(n_category, categorical_distribution, 'softmax')
 
-# latent_layers = [style,digit]
+latent_layers = [digit,style]
 # latent_layers = [style]
-latent_layers = [digit]
+# latent_layers = [digit]
 
 dimensions = len(latent_layers)
 
@@ -171,7 +171,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 1000, 1)
+aae_train(name, 100, 10)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
