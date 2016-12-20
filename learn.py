@@ -36,7 +36,8 @@ def categorical_distribution (z):
 digit = Latent(6, categorical_distribution, 'softmax')
 
 # latent_layers = [style,digit]
-latent_layers = [style]
+# latent_layers = [style]
+latent_layers = [digit]
 
 dimensions = len(latent_layers)
 
@@ -115,8 +116,6 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
     batch_size = int(epoch * computational_effort_factor)
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
-    from plot_all import plot_latent
-    plot_latent(noise.predict(x_train),np.zeros_like(y_train),"style-noise.png")
     x_train = x_train[:36000,:]   # for removing residuals
     total = x_train.shape[0]
     real_train = np.ones([total,dimensions])
@@ -159,7 +158,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,False), discriminators)
                     return aae_g.train_on_batch(x_batch, g_batch)
-                # r_loss = train_autoencoder()
+                r_loss = train_autoencoder()
                 d_loss = train_discriminator()
                 g_loss = train_generator()
                 r_loss, d_loss, g_loss = test()
@@ -167,12 +166,6 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
             print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
                                                     ('td',d['discriminator']),
                                                     ('tg',d['generator'])])
-            if (e % 120) == 0:
-                from plot_all import plot_latent, plot_latent_nolimit
-                r_loss, d_loss, g_loss = test()
-                z_test = encoders[0].predict(x_test)
-                plot_latent(z_test,y_test,"style-test-{}.png".format(e))
-                plot_latent_nolimit(z_test,y_test,"style2-test-{}.png".format(e))
     except KeyboardInterrupt:
         print ("learning stopped")
 
