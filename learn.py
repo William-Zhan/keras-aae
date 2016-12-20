@@ -115,6 +115,8 @@ def set_trainable(net, val):
         for l in net.layers:
             set_trainable(l, val)
 
+k = 10
+
 def aae_train (name, epoch=1000,batch_size=18000):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
     from keras.utils.generic_utils import Progbar
@@ -153,8 +155,8 @@ def aae_train (name, epoch=1000,batch_size=18000):
                     set_trainable(encoder, False)
                     set_trainable(decoder, False)
                     map(lambda d:set_trainable(d,True), discriminators)
-                    return aae_d.train_on_batch(x_batch, fake_batch) + \
-                        aae_nd.train_on_batch(n_batch, real_batch)
+                    return (aae_d.train_on_batch(x_batch, fake_batch) + \
+                            aae_nd.train_on_batch(n_batch, real_batch))/2
                 def train_generator():
                     set_trainable(encoder, True)
                     set_trainable(decoder, False)
@@ -171,7 +173,8 @@ def aae_train (name, epoch=1000,batch_size=18000):
                         pretraining = False
                         print "pretraining finished"
                         K.set_value(opt_r.lr, 0.001)
-                    d_loss = train_discriminator()
+                    for _k in range(k):
+                        d_loss = train_discriminator()
                     g_loss = train_generator()
     except KeyboardInterrupt:
         print ("learning stopped")
