@@ -114,7 +114,8 @@ def set_trainable(net, val):
 def aae_train (name, epoch=1000,batch_size=18000):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
     from keras.utils.generic_utils import Progbar
-    from util import mnist, plot_examples, plot_digits
+    from util import mnist, plot_examples
+    from plot_all import plot_digit
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
