@@ -41,6 +41,18 @@ def plot_latent_nolimit(latent,color,name,size=(6,6)):
     plt.colorbar()
     plt.savefig(name)
 
+def plot_digit(digit,color,name):
+    plt.figure(figsize=(10,30))
+    for i in range(6):
+        plt.scatter(np.random.random_sample(digit.shape[0])*0.7+i,
+                    digit[:,i],
+                    # s=2,
+                    c=color)
+    axes = plt.gca()
+    plt.colorbar()
+    plt.savefig(name)
+    
+    
 if __name__ == '__main__':
 
     pre_encoder = keras.models.load_model(name+'/pre.h5')
@@ -63,14 +75,7 @@ if __name__ == '__main__':
     
     print result_test[:10]
 
-    plt.figure(figsize=(6,8))
-    for i in range(6):
-        plt.scatter(np.random.random_sample(digit_test.shape[0])*0.3+i,
-                    digit_test[:,i],
-                    c=y_test)
-    axes = plt.gca()
-    plt.colorbar()
-    plt.savefig("digit-test.png")
+    plot_digit(digit_test,y_test,"digit-test.png")
     
     x_test_reconstructed = autoencoder.predict(x_test)
     n = 24  # how many digits we will display
