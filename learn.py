@@ -122,25 +122,26 @@ def aae_train (name, epoch=1000,batch_size=18000):
     from keras.utils.generic_utils import Progbar
     from util import mnist, plot_examples
     from plot_all import plot_digit
-    print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
     x_plot = x_test[:1000,:]
     y_plot = y_test[:1000]
     total = x_train.shape[0]
+    minibatch_per_epoch = total//batch_size
+    plot_epoch = epoch//200
+    print("{} epochs, total = {}, batch_size = {} ({} batch/epoch)".format(epoch, total, batch_size, minibatch_per_epoch))
     real_train = np.ones([total,dimensions])
     fake_train = np.zeros([total,dimensions])
     r_loss, val_loss, d_loss, g_loss = 0.,0.,0.,0.
-    plot_epoch = epoch//200
     pretraining = True
     try:
-        pb = Progbar(epoch*(total//batch_size), width=25)
+        pb = Progbar(epoch*minibatch_per_epoch, width=25)
         for e in range(epoch):
             if (e % plot_epoch) == 0:
                 plot_digit(encoders[0].predict(x_plot),y_plot,"digit-test-{}.png".format(e))
-            for i in range(total//batch_size):
+            for i in range(minibatch_per_epoch):
                 def update():
-                    pb.update(e*(total//batch_size)+i, [('r',r_loss), ('val',val_loss), ('d',d_loss), ('g',g_loss),])
+                    pb.update(e*minibatch_per_epoch+i, [('r',r_loss), ('val',val_loss), ('d',d_loss), ('g',g_loss),])
                 update()
                 x_batch = x_train[i*batch_size:(i+1)*batch_size]
                 n_batch = np.concatenate([l.sample(batch_size) for l in latent_layers],axis=1)
@@ -168,7 +169,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
                 # g_loss = train_generator()
                 r_loss = train_autoencoder()
                 val_loss = aae_r.test_on_batch(x_batch, x_batch)
-                if r_loss < 0.03 or not pretraining:
+                if e*minibatch_per_epoch+i > 1000 or not pretraining:
                     if pretraining:
                         pretraining = False
                         print "pretraining finished"
