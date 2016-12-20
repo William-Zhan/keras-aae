@@ -113,16 +113,17 @@ def aae_train (name, epoch=1000,batch_size=18000):
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
-    x_test = x_test[:1000,:]
-    y_test = y_test[:1000]
+    x_test = x_test[:200,:]
+    y_test = y_test[:200]
     total = x_train.shape[0]
     real_train = np.ones([total,dimensions])
     fake_train = np.zeros([total,dimensions])
     r_loss, d_loss, g_loss = 0.,0.,0.
+    plot_epoch = epoch//40
     try:
         pb = Progbar(epoch*(total//batch_size), width=25)
         for e in range(epoch):
-            if (e % (epoch//10)) == 0:
+            if (e % plot_epoch) == 0:
                 plot_digit(encoders[0].predict(x_test),y_test,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
                 def update():
