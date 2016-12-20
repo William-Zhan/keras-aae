@@ -132,7 +132,6 @@ def aae_train (name, epoch=1000,batch_size=18000):
     try:
         pb = Progbar(epoch*(total//batch_size), width=25)
         for e in range(epoch):
-            # val_loss = aae_r.evaluate(x_test, x_test)
             if (e % plot_epoch) == 0:
                 plot_digit(encoders[0].predict(x_plot),y_plot,"digit-test-{}.png".format(e))
             for i in range(total//batch_size):
