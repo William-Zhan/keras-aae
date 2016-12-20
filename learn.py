@@ -168,7 +168,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
                 # g_loss = train_generator()
                 r_loss = train_autoencoder()
                 val_loss = aae_r.test_on_batch(x_batch, x_batch)
-                if r_loss < 0.02 or not pretraining:
+                if r_loss < 0.03 or not pretraining:
                     if pretraining:
                         pretraining = False
                         print "pretraining finished"
