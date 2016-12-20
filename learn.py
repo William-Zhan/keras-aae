@@ -111,11 +111,10 @@ def set_trainable(net, val):
         for l in net.layers:
             set_trainable(l, val)
 
-def aae_train (name, epoch=128,computational_effort_factor=8):
+def aae_train (name, epoch=1000,batch_size=18000):
     from keras.callbacks import TensorBoard, CSVLogger, ReduceLROnPlateau, EarlyStopping
     from keras.utils.generic_utils import Progbar
     from util import mnist, plot_examples
-    batch_size = int(epoch * computational_effort_factor)
     print("epoch: {0}, batch: {1}".format(epoch, batch_size))
     x_train,y_train, x_test,y_test = mnist()
     x_train = x_train[:36000,:]   # for removing residuals
@@ -163,7 +162,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
                 r_loss = train_autoencoder()
                 d_loss = train_discriminator()
                 g_loss = train_generator()
-                r_loss, d_loss, g_loss = test()
+                # r_loss, d_loss, g_loss = test()
                 update()
             print "Epoch {}/{}: {}".format(e,epoch,[('r',r_loss), ('d',d_loss), ('g',g_loss),
                                                     ('td',d['discriminator']),
@@ -171,7 +170,7 @@ def aae_train (name, epoch=128,computational_effort_factor=8):
     except KeyboardInterrupt:
         print ("learning stopped")
 
-aae_train(name, 100, 10)
+aae_train(name, 1000, 18000)
 
 pre_encoder.save(name+"/pre.h5")
 autoencoder.save(name+"/model.h5")
