@@ -128,6 +128,7 @@ def aae_train (name, epoch=1000,batch_size=18000):
     fake_train = np.zeros([total,dimensions])
     r_loss, val_loss, d_loss, g_loss = 0.,0.,0.,0.
     plot_epoch = epoch//200
+    pretraining = True
     try:
         pb = Progbar(epoch*(total//batch_size), width=25)
         for e in range(epoch):
@@ -161,7 +162,10 @@ def aae_train (name, epoch=1000,batch_size=18000):
                         aae_ng.train_on_batch(n_batch, real_batch)
                 r_loss = train_autoencoder()
                 val_loss = aae_r.test_on_batch(x_batch, x_batch)
-                if e > 10:
+                if r_loss < 0.02 or not pretraining:
+                    if pretraining:
+                        pretraining = False
+                        print "pretraining finished"
                     d_loss = train_discriminator()
                     g_loss = train_generator()
     except KeyboardInterrupt:
